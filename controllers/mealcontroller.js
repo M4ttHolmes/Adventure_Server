@@ -2,6 +2,7 @@ const Express = require('express');
 const router = Express.Router();
 let validateJWT = require("../middleware/validate-jwt");
 const { models } = require("../models")
+const AccessControl = require("accesscontrol");
 
 
 //* CREATE NEW MEAL (EP7)
@@ -99,16 +100,29 @@ router.delete("/:id", validateJWT, async (req, res) => {
     }
 });
 
+// Access Control
+const ac = new AccessControl();
+
+ac.grant("Admin").readAny("all").deleteAny("admin");
+ac.grant("User")
+
+
 //* GET ALL MEALS (EP13)
 //! ADMIN ONLY
 router.get("/all", validateJWT, async (req, res) => {
-    try {
-        const meals = await models.MealModel.findAll();
-        res.status(200).json(meals);
-    } catch (err) {
-        res.status(500).json({ error: err });
+    const permission = ac.can(req.user.role).readAny("all")
+    
+    if(permission.granted) {
+        try {
+            const meals = await models.MealModel.findAll();
+            res.status(200).json(meals);
+        } catch (err) {
+            res.status(500).json({ error: err });
+        }
+    } else {
+        res.status(403).json({message: "Not an Admin."});
     }
-    });
+});
 
 module.exports = router;
 
@@ -116,18 +130,23 @@ module.exports = router;
 //* DELETE -ANY- MEAL BY ID (EP14)
 //! ADMIN ONLY
 router.delete("/admin/:id", validateJWT, async (req, res) => {
+    const permission = ac.can(req.user.role).deleteAny("admin")
 
-    const mealId = req.params.id;
+    if (permission.granted) {
+        const mealId = req.params.id;
 
-    try {
-        const query = {
-            where: {
-                id: mealId,
-            }
-        };
-        await models.MealModel.destroy(query);
-        res.status(200).json({ message: "Meal Deleted."});
-    } catch (err) {
-        res.status(500).json({ error: err });
+        try {
+            const query = {
+                where: {
+                    id: mealId,
+                }
+            };
+            await models.MealModel.destroy(query);
+            res.status(200).json({ message: "Meal Deleted."});
+        } catch (err) {
+            res.status(500).json({ error: err });
+        }
+    } else {
+        res.status(403).json({message: "Not an Admin."});
     }
 });
