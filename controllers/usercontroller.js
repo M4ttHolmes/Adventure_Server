@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { UserModel } = require("../models");
+const { models } = require("../models");
 const { UniqueConstraintError } = require('sequelize/lib/errors');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -10,7 +10,7 @@ let validateJWT = require("../middleware/validate-jwt")
 router.post("/register", async (req, res) => {
     const { email, password, firstName, lastName, role } = req.body.user;
     try {
-        let User = await UserModel.create({
+        let User = await models.UserModel.create({
             email,
             password: bcrypt.hashSync(password, 13),
             firstName,
@@ -43,7 +43,7 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body.user;
 
     try {
-        let loginUser = await UserModel.findOne({
+        let loginUser = await models.UserModel.findOne({
             where: {
                 email: email,
             }
@@ -78,5 +78,40 @@ router.post("/login", async (req, res) => {
         })
     }
 })
+
+// router.post("/login", async (req, res) => {
+//     let { email, password } = req.body.user;
+//     try {
+//         let loginUser = await UserModel.findOne({
+//             where: {
+//                 email: email,
+//             },
+//         });
+    
+//         if (loginUser) {
+//             let passwordComparison = await bcrypt.compare(password, loginUser.password);
+//             if (passwordComparison) {
+//                 let token = jwt.sign({id: loginUser.id}, process.env.JWT_SECRET, {expiresIn: 60 * 60 * 24});
+//                 res.status(200).json({
+//                     user: loginUser,
+//                     message: "User successfully logged in!",
+//                     sessionToken: token
+//                 });
+//             } else {
+//                 res.status(401).json({
+//                     message: "Incorrect email or password"
+//                 })
+//             }
+//         } else { 
+//             res.status(401).json({
+//                 message: 'Incorrect email or password'
+//             });
+//         }
+//     } catch (error) {
+//         res.status(500).json({
+//             message: "Failed to log user in"
+//         })
+//     }
+// });
 
 module.exports = router;
