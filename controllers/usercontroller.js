@@ -89,6 +89,30 @@ router.get("/all", validateJWT, async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err });
     }
-    });
+});
+
+
+//* DELETE USER BY ID (EP15)
+//! ADMIN ONLY
+router.delete("/delete/:id", validateJWT, async (req, res) => {
+    const userId = req.params.id
+
+    try {
+        const query = {
+            where: {
+                id: userId
+        },
+    };
+    
+        await models.UserModel.destroy(query)
+        res.status(200).json({
+            message: "User Deleted"
+        })
+    } catch(err) {
+        res.status(500).json({
+            message: "Failed to delete User"
+        })
+    }
+})
 
 module.exports = router;

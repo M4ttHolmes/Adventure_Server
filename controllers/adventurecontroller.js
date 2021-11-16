@@ -82,7 +82,7 @@ router.put("/update/:id", validateJWT, async(req, res) => {
 });
 
 
-//* DELETE ADVENTURE BY ID
+//* DELETE -MY- ADVENTURE BY ID (EP6)
 router.delete("/:id", validateJWT, async (req, res) => {
     const userId = req.user.id;
     const advId = req.params.id;
@@ -95,7 +95,7 @@ router.delete("/:id", validateJWT, async (req, res) => {
             }
         };
         await models.AdventureModel.destroy(query);
-        res.status(200).json({ message: "Character Deleted."});
+        res.status(200).json({ message: "Adventure Deleted."});
     } catch (err) {
         res.status(500).json({ error: err });
     }
@@ -111,5 +111,24 @@ router.get("/all", validateJWT, async (req, res) => {
         res.status(500).json({ error: err });
     }
     });
+
+//* DELETE -ANY- ADVENTURE BY ID (EP16)
+//! ADMIN ONLY
+router.delete("/admin/:id", validateJWT, async (req, res) => {
+    const advId = req.params.id;
+
+    try {
+        const query = {
+            where: {
+                id: advId,
+            }
+        };
+        await models.AdventureModel.destroy(query);
+        res.status(200).json({ message: "Adventure Deleted."});
+    } catch (err) {
+        res.status(500).json({ error: err });
+    }
+});
+
 
 module.exports = router;
