@@ -146,6 +146,7 @@ router.delete("/admin/:id", validateJWT, async (req, res) => {
         } catch (err) {
             res.status(500).json({ error: err });
         }
+        
     } else {
         res.status(403).json({message: "Not an Admin."});
     }
