@@ -3,9 +3,13 @@ const app = Express();
 require("dotenv").config();
 const dbConnection = require("./db")
 
+app.use(Express.json());
+
 const controllers = require("./controllers");
 
 app.use("/adventure", controllers.adventureController);
+app.use("/user", controllers.userController); 
+app.use("/meal", controllers.mealController);
 
 
 dbConnection.authenticate()
