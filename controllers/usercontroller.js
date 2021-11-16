@@ -79,4 +79,16 @@ router.post("/login", async (req, res) => {
     }
 })
 
+
+//* GET ALL USERS (EP11)
+//! Admin Only
+router.get("/all", validateJWT, async (req, res) => {
+    try {
+        const users = await models.UserModel.findAll();
+        res.status(200).json(users);
+    } catch (err) {
+        res.status(500).json({ error: err });
+    }
+    });
+
 module.exports = router;

@@ -6,9 +6,10 @@ const dbConnection = require("./db")
 app.use(Express.json());
 
 const controllers = require("./controllers");
+app.use(require("./middleware/validate-jwt"))
 
-app.use("/adventure", controllers.adventureController);
 app.use("/user", controllers.userController); 
+app.use("/adventure", controllers.adventureController);
 app.use("/meal", controllers.mealController);
 
 
