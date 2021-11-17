@@ -4,6 +4,7 @@ const { UniqueConstraintError } = require('sequelize/lib/errors');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 let validateJWT = require("../middleware/validate-jwt")
+const AccessControl = require("accesscontrol");
 
 
 //* USER REGISTRATION ENDPOINT (EP1)
@@ -79,16 +80,58 @@ router.post("/login", async (req, res) => {
     }
 })
 
+// Access Control
+const ac = new AccessControl();
+
+ac.grant("Admin").readAny("all").deleteAny("delete");
+ac.grant("User")
+
 
 //* GET ALL USERS (EP11)
 //! Admin Only
 router.get("/all", validateJWT, async (req, res) => {
-    try {
-        const users = await models.UserModel.findAll();
-        res.status(200).json(users);
-    } catch (err) {
-        res.status(500).json({ error: err });
+    const permission = ac.can(req.user.role).readAny("all")
+
+    if(permission.granted) {
+        try {
+            const users = await models.UserModel.findAll();
+            res.status(200).json(users);
+        } catch (err) {
+            res.status(500).json({ error: err });
+        }
+    } else {
+        res.status(403).json({message: "Not an Admin."});
     }
-    });
+});
+
+
+//* DELETE USER BY ID (EP15)
+//! ADMIN ONLY
+router.delete("/delete/:id", validateJWT, async (req, res) => {
+    const permission = ac.can(req.user.role).deleteAny("delete")
+
+    if (permission.granted) {
+        const userId = req.params.id
+
+        try {
+            const query = {
+                where: {
+                    id: userId
+            },
+        };
+        
+            await models.UserModel.destroy(query)
+            res.status(200).json({
+                message: "User Deleted"
+            })
+        } catch(err) {
+            res.status(500).json({
+                message: "Failed to delete User"
+            })
+        }
+    } else {
+        res.status(403).json({message: "Not an Admin."});
+    }
+})
 
 module.exports = router;
